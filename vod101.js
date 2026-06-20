@@ -1,18 +1,18 @@
 // ignore
 
-//@name:扩展名称
+//@name:MissAV
 // 网站主页，只有视频源扩展需要
-//@webSite:网站主页
+//@webSite:https://missav.ai
 // 版本号纯数字
 //@version:1
 // 备注，没有的话就不填
-//@remark:这是备注
+//@remark:Yvan's SESE
 // 加密 id，没有的话就不填
 //@codeID:
 // 使用的环境变量，没有的话就不填
 //@env:
 // 是否是AV 1是  0否
-//@isAV:0
+//@isAV:1
 //是否弃用 1是  0否
 //@deprecated:0
 
@@ -70,7 +70,7 @@ import { cheerio, Crypto, Encrypt, JSONbig } from '../core/uz3lib.js'
 // 请勿删减，可以新增
 
 const appConfig = {
-    _webSite: '',
+    _webSite: 'https://missav.ai',
     /**
      * 网站主页，uz 调用每个函数前都会进行赋值操作
      * 如果不想被改变 请自定义一个变量
