@@ -1,28 +1,15 @@
 // ignore
 
 //@name:MissAV
-// 网站主页，只有视频源扩展需要
 //@webSite:https://missav.ai
-// 版本号纯数字
 //@version:1
-// 备注，没有的话就不填
-//@remark:Yvan's SESE
-// 加密 id，没有的话就不填
+//@remark:Yvan MissAV
 //@codeID:
-// 使用的环境变量，没有的话就不填
 //@env:
-// 是否是AV 1是  0否
 //@isAV:1
-//是否弃用 1是  0否
 //@deprecated:0
 
-// ignore
 
-
-
-// ignore
-// 不支持导入，这里只是本地开发用于代码提示
-// 如需添加通用依赖，请联系 https://t.me/uzVideoAppbot
 import {
     FilterLabel,
     FilterTitle,
@@ -38,157 +25,357 @@ import {
     UZSubclassVideoListArgs,
 } from '../core/uzVideo.js'
 
+
 import {
-    UZUtils,
-    ProData,
-    ReqResponseType,
-    ReqAddressType,
     req,
-    getEnv,
-    setEnv,
-    goToVerify,
-    openWebToBindEnv,
-    toast,
-    kIsDesktop,
-    kIsAndroid,
-    kIsIOS,
-    kIsWindows,
-    kIsMacOS,
-    kIsTV,
-    kLocale,
-    kAppVersion,
-    formatBackData,
 } from '../core/uzUtils.js'
 
-import { cheerio, Crypto, Encrypt, JSONbig } from '../core/uz3lib.js'
-// ignore
+
+import {
+    cheerio
+} from '../core/uz3lib.js'
 
 
-//MARK: 注意
-// 直接复制该文件进行扩展开发
-// 请保持以下 变量 及 函数 名称不变
-// 请勿删减，可以新增
 
-const appConfig = {
-    _webSite: 'https://missav.ai',
-    /**
-     * 网站主页，uz 调用每个函数前都会进行赋值操作
-     * 如果不想被改变 请自定义一个变量
-     */
-    get webSite() {
+// 防止重复变量
+var appConfig = {
+
+    _webSite:'https://missav.ai',
+
+    get webSite(){
         return this._webSite
     },
-    set webSite(value) {
-        this._webSite = value
+
+    set webSite(value){
+        this._webSite=value
     },
 
-    _uzTag: '',
-    /**
-     * 扩展标识，初次加载时，uz 会自动赋值，请勿修改
-     * 用于读取环境变量
-     */
-    get uzTag() {
+
+    _uzTag:'',
+
+    get uzTag(){
         return this._uzTag
     },
-    set uzTag(value) {
-        this._uzTag = value
-    },
+
+    set uzTag(value){
+        this._uzTag=value
+    }
+
 }
 
-/**
- * 异步获取分类列表的方法。
- * @param {UZArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoClassList())>}
- */
-async function getClassList(args) {
-    var backData = new RepVideoClassList()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
+
+
+// 分类
+
+async function getClassList(args){
+
+    let backData=new RepVideoClassList()
+
+    try{
+
+        let html=await req(appConfig.webSite)
+
+        let $=cheerio.load(html)
+
+        $("a").each((i,e)=>{
+
+            let name=$(e).text().trim()
+            let href=$(e).attr("href")
+
+            if(
+                name &&
+                href &&
+                href.includes("/categories/")
+            ){
+
+                backData.data.push({
+
+                    type_id:href,
+
+                    type_name:name
+
+                })
+
+            }
+
+        })
+
+
+    }catch(e){
+
+        backData.error=e.toString()
+
     }
+
+
     return JSON.stringify(backData)
+
 }
 
-/**
- * 获取二级分类列表筛选列表的方法。
- * @param {UZArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoSubclassList())>}
- */
-async function getSubclassList(args) {
-    var backData = new RepVideoSubclassList()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
+
+
+// 二级分类
+
+async function getSubclassList(args){
+
+    let backData=new RepVideoSubclassList()
+
+    try{
+
+
+    }catch(e){
+
+        backData.error=e.toString()
+
     }
+
     return JSON.stringify(backData)
+
 }
 
-/**
- * 获取分类视频列表
- * @param {UZArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoList())>}
- */
-async function getVideoList(args) {
-    var backData = new RepVideoList()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
+
+
+// 视频列表
+
+async function getVideoList(args){
+
+
+    let backData=new RepVideoList()
+
+
+    try{
+
+
+        let url=args.url || appConfig.webSite
+
+
+        let html=await req(url)
+
+
+        let $=cheerio.load(html)
+
+
+
+        $("a").each((i,e)=>{
+
+
+            let href=$(e).attr("href")
+
+            let title=$(e)
+            .find("img")
+            .attr("alt")
+
+
+            let cover=$(e)
+            .find("img")
+            .attr("data-src")
+
+
+            if(
+                href &&
+                href.includes("/d/")
+            ){
+
+
+                backData.data.push({
+
+
+                    vod_id:
+                    appConfig.webSite+href,
+
+
+                    vod_name:
+                    title || "MissAV",
+
+
+                    vod_pic:
+                    cover || "",
+
+
+                })
+
+            }
+
+
+        })
+
+
+
+    }catch(e){
+
+        backData.error=e.toString()
+
     }
+
+
     return JSON.stringify(backData)
+
 }
 
-/**
- * 获取二级分类视频列表 或 筛选视频列表
- * @param {UZSubclassVideoListArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoList())>}
- */
-async function getSubclassVideoList(args) {
-    var backData = new RepVideoList()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
-    }
-    return JSON.stringify(backData)
+
+
+// 二级列表
+
+async function getSubclassVideoList(args){
+
+
+    return getVideoList(args)
+
 }
 
-/**
- * 获取视频详情
- * @param {UZArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoDetail())>}
- */
-async function getVideoDetail(args) {
-    var backData = new RepVideoDetail()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
+
+
+// 视频详情
+
+async function getVideoDetail(args){
+
+
+    let backData=new RepVideoDetail()
+
+
+    try{
+
+
+        let html=await req(args.url)
+
+
+        let $=cheerio.load(html)
+
+
+
+        backData.data={
+
+
+            vod_name:
+            $("h1").text().trim(),
+
+
+            vod_pic:
+            $("meta[property='og:image']")
+            .attr("content"),
+
+
+            vod_content:
+            $("meta[property='og:description']")
+            .attr("content"),
+
+
+            vod_play_from:
+            "MissAV",
+
+
+            vod_play_url:
+            args.url
+
+
+        }
+
+
+
+    }catch(e){
+
+        backData.error=e.toString()
+
     }
+
+
     return JSON.stringify(backData)
+
 }
 
-/**
- * 获取视频的播放地址
- * @param {UZArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoPlayUrl())>}
- */
-async function getVideoPlayUrl(args) {
-    var backData = new RepVideoPlayUrl()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
+
+
+
+
+// 播放地址
+
+async function getVideoPlayUrl(args){
+
+
+    let backData=new RepVideoPlayUrl()
+
+
+    try{
+
+
+        let html=await req(args.url)
+
+
+        let m3u8 =
+        html.match(
+        /https?:\/\/[^"']+\.m3u8[^"']*/)
+
+
+        if(m3u8){
+
+
+            backData.data={
+                url:m3u8[0]
+            }
+
+
+        }else{
+
+
+            backData.error=
+            "未找到m3u8"
+
+
+        }
+
+
+
+    }catch(e){
+
+        backData.error=e.toString()
+
     }
+
+
+
     return JSON.stringify(backData)
+
 }
 
-/**
- * 搜索视频
- * @param {UZArgs} args
- * @returns {@Promise<JSON.stringify(new RepVideoList())>}
- */
-async function searchVideo(args) {
-    var backData = new RepVideoList()
-    try {
-    } catch (error) {
-        backData.error = error.toString()
+
+
+
+
+// 搜索
+
+async function searchVideo(args){
+
+
+    let backData=new RepVideoList()
+
+
+    try{
+
+
+        let key=
+        encodeURIComponent(args.searchWord)
+
+
+        let url=
+        appConfig.webSite+
+        "/search/"+key
+
+
+
+        return getVideoList({
+            url:url
+        })
+
+
+
+    }catch(e){
+
+        backData.error=e.toString()
+
     }
+
+
+
     return JSON.stringify(backData)
+
 }
